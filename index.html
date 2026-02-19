@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Portfolio</title>
+  <title>Oscar van den Bosch</title>
   <style>
     * {
       margin: 0;
@@ -16,25 +16,47 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #F7F6E8;
       font-family: 'Segoe UI', sans-serif;
       color: #f0f0f0;
+      overflow: hidden;
+      background: #0a0a1a;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 0;
     }
 
     .card {
-      background: #1a1a1a;
-      border: 1px solid #2a2a2a;
-      border-radius: 16px;
+      position: relative;
+      z-index: 1;
+      background: rgba(20, 20, 35, 0.75);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
       padding: 48px 56px;
       text-align: center;
-      max-width: 420px;
+      max-width: 440px;
       width: 90%;
+      box-shadow: 0 0 60px rgba(0, 119, 181, 0.15);
+    }
+
+    .profile-photo {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #0077b5;
+      margin-bottom: 20px;
     }
 
     h1 {
-      font-size: 2rem;
+      font-size: 1.6rem;
       margin-bottom: 8px;
-      letter-spacing: 1px;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
     }
 
     .subtitle {
@@ -56,11 +78,12 @@
       text-decoration: none;
       font-size: 1rem;
       font-weight: 600;
-      transition: opacity 0.2s;
+      transition: opacity 0.2s, transform 0.2s;
     }
 
     a.btn:hover {
       opacity: 0.85;
+      transform: translateY(-2px);
     }
 
     .btn-cv {
@@ -74,8 +97,8 @@
     }
 
     .gmail-box {
-      background: #1e1e1e;
-      border: 1px solid #333;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
       border-radius: 10px;
       padding: 14px 20px;
       display: flex;
@@ -87,7 +110,6 @@
     .gmail-box span {
       font-size: 0.95rem;
       color: #ccc;
-      word-break: break-all;
     }
 
     .copy-btn {
@@ -112,7 +134,11 @@
   </style>
 </head>
 <body>
+
+  <canvas id="bg"></canvas>
+
   <div class="card">
+    <img class="profile-photo" src="photo.jpg" alt="Oscar van den Bosch" />
     <h1>Oscar van den Bosch</h1>
     <p class="subtitle">Full Stack Developer & Freelancer</p>
 
@@ -128,7 +154,7 @@
         View My CV
       </a>
 
-      <!-- Gmail (copy to clipboard) -->
+      <!-- Gmail -->
       <div class="gmail-box">
         <span>Grer792@gmail.com</span>
         <button class="copy-btn" onclick="copyEmail()">Copy</button>
@@ -138,6 +164,74 @@
   </div>
 
   <script>
+    // Animated particle background
+    const canvas = document.getElementById('bg');
+    const ctx = canvas.getContext('2d');
+
+    let W, H, particles;
+
+    function init() {
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+      particles = Array.from({ length: 80 }, () => ({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        r: Math.random() * 1.5 + 0.5,
+        dx: (Math.random() - 0.5) * 0.4,
+        dy: (Math.random() - 0.5) * 0.4,
+        alpha: Math.random() * 0.5 + 0.2
+      }));
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+
+      // Gradient background
+      const grad = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, W * 0.8);
+      grad.addColorStop(0, '#0d0d2b');
+      grad.addColorStop(1, '#04040f');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+
+      // Draw connections
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 120) {
+            ctx.beginPath();
+            ctx.strokeStyle = `rgba(0, 119, 181, ${0.15 * (1 - dist / 120)})`;
+            ctx.lineWidth = 0.5;
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+
+      // Draw particles
+      particles.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(0, 180, 255, ${p.alpha})`;
+        ctx.fill();
+
+        p.x += p.dx;
+        p.y += p.dy;
+
+        if (p.x < 0 || p.x > W) p.dx *= -1;
+        if (p.y < 0 || p.y > H) p.dy *= -1;
+      });
+
+      requestAnimationFrame(draw);
+    }
+
+    window.addEventListener('resize', init);
+    init();
+    draw();
+
+    // Copy email
     function copyEmail() {
       navigator.clipboard.writeText('Grer792@gmail.com').then(() => {
         const btn = document.querySelector('.copy-btn');
